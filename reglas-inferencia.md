@@ -204,7 +204,6 @@ Las **reglas de inferencia** especifican qué **juicios de tipo** son válidos
 - Cada regla tiene premisas (arriba) y una conclusión (abajo)
 - Se combinan para construir derivaciones
 
-Objetivo: mostrar las reglas del libro de Reynolds (15.1–15.18) y su correspondencia con Rust
 
 ---
 
