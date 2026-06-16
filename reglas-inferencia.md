@@ -298,9 +298,9 @@ $$
 \pi \vdash v : \theta \quad \text{cuando } \pi \text{ contiene } v : \theta
 $$
 
-Es la **única regla sin premisas** — punto de partida de toda derivación
+Es una regla **sin premisas** (un axioma), al igual que las constantes (`true`, `0`) o `error` — actúa como hoja o punto de partida en el árbol de derivación.
 
-> En Rust: `let x: i32 = 42;` asocia `x` con `i32` en el contexto
+> En Rust: No representa la declaración (`let`), sino el **uso**. Cuando el compilador encuentra `x + 5`, aplica esta regla buscando `x` en su contexto actual para resolver su tipo.
 
 ---
 
@@ -395,12 +395,12 @@ enum Respuesta {
     Valor(bool),   // @1
 }
 
-let e = Respuesta::Numerica(33); // @0 33
+let e: Respuesta = Respuesta::Numerica(33); // @0 33 
 
-match e { // sumcase e of (f_0, f_1)
-    Respuesta::Numerica(v) => { },
-    Respuesta::Valor(v)    => { },
-}
+let res = match e { // sumcase e of (f_0: u32, f_1: u32) => res: u32
+    Respuesta::Numerica(v) => { f_0() },
+    Respuesta::Valor(v)    => { f_1() },
+} 
 ```
 
 El `match` de Rust es exactamente la **eliminación de la suma** con clausura exhaustiva
@@ -422,9 +422,9 @@ $$
 En Rust: _destructuring_ en `let` o `match`
 
 ```rust
-let punto = (3, 7);
+let punto: (i32, i32) = (3, 7);
 let (x, y) = punto; // x: i32, y: i32
-// equivale a: π, x:int, y:int ⊢ ...
+let res = x + y; //res: i32
 ```
 
 ---
@@ -449,9 +449,10 @@ $$
 En Rust: `let` vincula nombres a expresiones en el bloque
 
 ```rust
-let x = 42;
-let y = x + 1;
-// en el contexto: x: i32, y: i32
+let p_0 = 32;
+let p_1 = 31;
+let e = p_0 + p_1;
+// en el contexto: p_0: i32, p_1: i32, e: i32
 ```
 
 ---
@@ -480,6 +481,8 @@ fn fact(n: u32) -> u32 {
     if n == 0 { 1 } else { n * fact(n - 1) }
 }
 // fact puede referenciarse a sí misma en el cuerpo
+// letrec fact ≡ λn. if n = 0 then 1 else n x fact(n — 1) 
+// fact:int -> int 
 ```
 
 ---
@@ -492,9 +495,8 @@ $$
 \frac{\pi \vdash e : \theta \to \theta}{\pi \vdash \mathbf{rec}\; e : \theta}
 $$
 
-- Toda función $e : \theta \to \theta$ tiene un punto fijo
+- Toda función $e : \theta \to \theta$ tiene un punto fijo (en semántica denotacional)
 - Permite definir recursión _sin nombres_
-- **letrec** es azúcar sintáctico sobre **rec**
 
 ---
 
