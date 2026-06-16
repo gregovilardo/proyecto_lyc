@@ -204,7 +204,7 @@ Las **reglas de inferencia** especifican qué **juicios de tipo** son válidos
 - Cada regla tiene premisas (arriba) y una conclusión (abajo)
 - Se combinan para construir derivaciones
 
-Objetivo: mostrar las reglas del libro de Reynolds y su correspondencia con Rust
+Objetivo: mostrar las reglas del libro de Reynolds (15.1–15.18) y su correspondencia con Rust
 
 ---
 
@@ -221,7 +221,7 @@ $$
 \end{aligned}
 $$
 
-Abreviaciones: 
+Abreviaciones:
 $$\theta_0 \times \theta_1 \equiv \mathbf{prod}(\theta_0, \theta_1)$$
 $$\mathbf{unit} \equiv \mathbf{prod}()$$
 $$\theta_0 + \theta_1 \equiv \mathbf{sum}(\theta_0, \theta_1)$$
@@ -251,6 +251,45 @@ $$
 
 ---
 
+## Constantes y Operaciones (15.1)
+
+Constantes primitivas — axiomas (sin premisas):
+
+$$
+\frac{}{\pi \vdash \mathbf{true} : \mathbf{bool}} \qquad
+\frac{}{\pi \vdash 0 : \mathbf{int}} \quad \text{etc.}
+$$
+
+Operaciones primitivas:
+
+$$
+\frac{\pi \vdash e_0 : \mathbf{int} \quad \pi \vdash e_1 : \mathbf{int}}{\pi \vdash e_0 + e_1 : \mathbf{int}} \qquad
+\frac{\pi \vdash e_0 : \mathbf{int} \quad \pi \vdash e_1 : \mathbf{int}}{\pi \vdash e_0 = e_1 : \mathbf{bool}}
+$$
+
+$$
+\frac{\pi \vdash e_0 : \mathbf{bool} \quad \pi \vdash e_1 : \mathbf{bool}}{\pi \vdash e_0 \land e_1 : \mathbf{bool}}
+$$
+
+---
+
+## Condicional (15.2)
+
+La rama `if` une dos caminos en un mismo tipo:
+
+$$
+\frac{\pi \vdash e_0 : \mathbf{bool} \quad \pi \vdash e_1 : \theta \quad \pi \vdash e_2 : \theta}{\pi \vdash \mathbf{if}\; e_0\; \mathbf{then}\; e_1\; \mathbf{else}\; e_2 : \theta}
+$$
+
+En Rust: `if` es una expresión — ambas ramas deben tener el mismo tipo
+
+```rust
+let resultado = if x > 0 { x } else { -x };
+// resultado: i32
+```
+
+---
+
 ## Variables (15.3)
 
 Axioma: una variable tiene el tipo que el contexto le asigna
@@ -275,8 +314,6 @@ $$
 
 ---
 
-
-
 ## _→_ Eliminación (15.5)
 
 Aplicar una función:
@@ -286,8 +323,6 @@ $$
 $$
 
 ---
-
-
 
 ## Producto (15.6 — 15.7)
 
@@ -370,21 +405,165 @@ match e { // sumcase e of (f_0, f_1)
 
 El `match` de Rust es exactamente la **eliminación de la suma** con clausura exhaustiva
 
----
-
-## Suma Vacía y Tipo `!`
-
-**`sum()`** — la suma vacía, cardinalidad 0
-
-```rust
-enum SumaVacia {} // sin variantes
-```
-
-Equivale al tipo **`!`** (never): representa **imposibilidad de retornar**
+**`sum()`** — suma vacía → `enum SumaVacia {}` → tipo **`!`** (never)
 
 > **`unit`** ≠ **`empty`**: `unit` expresa _ausencia de información_; `empty` representa _imposibilidad_
 
-En funciones que nunca retornan (bucle infinito, panic), el tipo de retorno es `!`
+---
+
+## Patrones (15.10)
+
+El patrón de producto descompone una tupla en el contexto:
+
+$$
+\frac{\pi, p_0{:}\theta_0,\dots,p_{n-1}{:}\theta_{n-1},\pi' \vdash e : \theta}{\pi, \langle p_0,\dots,p_{n-1} \rangle {:} \mathbf{prod}(\theta_0,\dots,\theta_{n-1}),\pi' \vdash e : \theta}
+$$
+
+En Rust: _destructuring_ en `let` o `match`
+
+```rust
+let punto = (3, 7);
+let (x, y) = punto; // x: i32, y: i32
+// equivale a: π, x:int, y:int ⊢ ...
+```
+
+---
+
+## let (15.11)
+
+Introducción de variables locales:
+
+$$
+\frac{
+\begin{matrix}
+\pi \vdash e_0 : \theta_0 \\
+\vdots \\
+\pi \vdash e_{n-1} : \theta_{n-1} \\
+\pi, p_0{:}\theta_0,\dots,p_{n-1}{:}\theta_{n-1} \vdash e : \theta
+\end{matrix}
+}{
+\pi \vdash \mathbf{let}\; p_0 \equiv e_0,\dots,p_{n-1} \equiv e_{n-1}\; \mathbf{in}\; e : \theta
+}
+$$
+
+En Rust: `let` vincula nombres a expresiones en el bloque
+
+```rust
+let x = 42;
+let y = x + 1;
+// en el contexto: x: i32, y: i32
+```
+
+---
+
+## letrec (15.12)
+
+Definiciones recursivas:
+
+$$
+\frac{
+\begin{matrix}
+\pi, p_0{:}\theta_0,\dots,p_{n-1}{:}\theta_{n-1} \vdash e_0 : \theta_0 \\
+\vdots \\
+\pi, p_0{:}\theta_0,\dots,p_{n-1}{:}\theta_{n-1} \vdash e_{n-1} : \theta_{n-1} \\
+\pi, p_0{:}\theta_0,\dots,p_{n-1}{:}\theta_{n-1} \vdash e : \theta
+\end{matrix}
+}{
+\pi \vdash \mathbf{letrec}\; p_0 \equiv e_0,\dots,p_{n-1} \equiv e_{n-1}\; \mathbf{in}\; e : \theta
+}
+$$
+
+En Rust: funciones recursivas con `fn`
+
+```rust
+fn fact(n: u32) -> u32 {
+    if n == 0 { 1 } else { n * fact(n - 1) }
+}
+// fact puede referenciarse a sí misma en el cuerpo
+```
+
+---
+
+## Punto Fijo (15.13)
+
+Combinador de punto fijo — base teórica de la recursión:
+
+$$
+\frac{\pi \vdash e : \theta \to \theta}{\pi \vdash \mathbf{rec}\; e : \theta}
+$$
+
+- Toda función $e : \theta \to \theta$ tiene un punto fijo
+- Permite definir recursión _sin nombres_
+- **letrec** es azúcar sintáctico sobre **rec**
+
+---
+
+## Listas (15.14 — 15.15)
+
+**Introducción** — nil y cons:
+
+$$
+\frac{}{\pi \vdash \mathbf{nil} : \mathbf{list}\; \theta} \qquad
+\frac{\pi \vdash e_0 : \theta \quad \pi \vdash e_1 : \mathbf{list}\; \theta}{\pi \vdash e_0 :: e_1 : \mathbf{list}\; \theta}
+$$
+
+**Eliminación** — listcase:
+
+$$
+\frac{
+\pi \vdash e_0 : \mathbf{list}\; \theta \quad
+\pi \vdash e_1 : \theta' \quad
+\pi \vdash e_2 : \theta \to \mathbf{list}\; \theta \to \theta'
+}{
+\pi \vdash \mathbf{listcase}\; e_0\; \mathbf{of}\; (e_1, e_2) : \theta'
+}
+$$
+
+En Rust: `Vec<T>` es el tipo lista estándar
+
+```rust
+let v: Vec<i32> = vec![1, 2, 3];
+let primero = v[0];  // acceso por índice
+```
+
+---
+
+## Continuaciones (15.16 — 15.17)
+
+**callcc** — capturar la continuación actual:
+
+$$
+\frac{\pi \vdash e : \mathbf{cont}\; \theta \to \theta}{\pi \vdash \mathbf{callcc}\; e : \theta}
+$$
+
+**throw** — saltar a una continuación:
+
+$$
+\frac{\pi \vdash e_0 : \mathbf{cont}\; \theta \quad \pi \vdash e_1 : \theta}{\pi \vdash \mathbf{throw}\; e_0\; e_1 : \theta'}
+$$
+
+Rust **no tiene** continuaciones de primera clase — estas reglas pertenecen a lenguajes con control imperativo (Scheme, SML)
+
+---
+
+## Error (15.18)
+
+Axioma: `error` puede tener **cualquier tipo**
+
+$$
+\frac{}{\pi \vdash \mathbf{error} : \theta}
+$$
+
+En Rust: `panic!()` y `unreachable!()` tipan a cualquier tipo
+
+```rust
+fn dividir(a: i32, b: i32) -> i32 {
+    if b == 0 { panic!("division por cero") }
+    else { a / b }
+}
+```
+
+Regla de _escape_ — permite abortar la evaluación bajo demanda
 
 ---
 
@@ -439,8 +618,8 @@ Pasos 1–6: _prueba final_ (de axiomas a meta) — misma derivación en orden i
 ## Resumen
 
 - Las **reglas de inferencia** definen formalmente el tipado
-- Cada constructor tiene **introducción** y **eliminación**
-- **Rust** implementa fielmente estas reglas: tuplas (`prod`), `enum` (`sum`), `!` (`sum()`)
+- Cubren 18 reglas: constantes, condicional, variables, funciones, producto, suma, patrones, definiciones, punto fijo, listas, continuaciones y error
+- **Rust** implementa fielmente varias: tuplas (`prod`), `enum` (`sum`), `!` (`sum()`), `if` (condicional), `let`, destructuring, `Vec`, `panic!`
 - Una **derivación** se construye combinando reglas desde axiomas hasta la meta
 - RustBelt fundamenta semánticamente el sistema de tipos de Rust
 
