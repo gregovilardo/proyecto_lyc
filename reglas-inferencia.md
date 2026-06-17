@@ -297,9 +297,7 @@ $$
 \pi \vdash v : \theta \quad \text{cuando } \pi \text{ contiene } v : \theta
 $$
 
-Es una regla **sin premisas** (un axioma), al igual que las constantes (`true`, `0`) o `error` — actúa como hoja o punto de partida en el árbol de derivación.
-
-> En Rust: No representa la declaración (`let`), sino el **uso**. Cuando el compilador encuentra `x + 5`, aplica esta regla buscando `x` en su contexto actual para resolver su tipo.
+Es una regla **sin premisas** (un axioma) actúa como hoja o punto de partida en el árbol de derivación.
 
 ---
 
@@ -616,15 +614,6 @@ Pasos 1–6: _prueba final_ (de axiomas a meta) — misma derivación en orden i
 
 ---
 
-## Resumen
-
-- Las **reglas de inferencia** definen formalmente el tipado
-- Cubren 18 reglas: constantes, condicional, variables, funciones, producto, suma, patrones, definiciones, punto fijo, listas, continuaciones y error
-- **Rust** implementa fielmente varias: tuplas (`prod`), `enum` (`sum`), `!` (`sum()`), `if` (condicional), `let`, destructuring, `Vec`, `panic!`
-- Una **derivación** se construye combinando reglas desde axiomas hasta la meta
-- RustBelt fundamenta semánticamente el sistema de tipos de Rust
-
----
 
 ## Referencias
 
