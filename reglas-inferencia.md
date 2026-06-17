@@ -521,8 +521,11 @@ $$
 En Rust: `Vec<T>` es el tipo lista estándar
 
 ```rust
-let v: Vec<i32> = vec![1, 2, 3];
-let primero = v[0];  // acceso por índice
+let v = vec![1, 2, 3];
+match v.as_slice() {
+    [] => println!("Lista vacía"), // e1
+    [primero, resto @ ..] => println!("Primero: {}, Resto: {:?}", primero, resto), // e2 (primero, resto)
+}
 ```
 
 ---
